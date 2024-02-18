@@ -11,8 +11,6 @@ import (
 func ConnectToPostgresDB(connectionString string) (*sql.DB, error) {
 	db, err := sql.Open("postgres", connectionString)
 	utils.TreatNilObjectError(err, "Falha ao conectar ao banco de dados: %v")
-	err = db.Ping()
-	utils.TreatNilObjectError(err, "Falha ao pingar o banco de dados: %v")
 	log.Println("Conexão com o banco de dados PostgreSQL estabelecida")
 	return db, err
 }
