@@ -6,6 +6,7 @@ import (
 	"log"
 
 	"github.com/keevferreira/recipes-api/internal/utils"
+	_ "github.com/lib/pq"
 )
 
 func ConnectToPostgresDB(connectionString string) (*sql.DB, error) {

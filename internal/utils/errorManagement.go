@@ -6,7 +6,7 @@ import (
 )
 
 func TreatNilObjectError(obj error, errorMessage string) {
-	if obj == nil {
+	if obj != nil {
 		fmt.Print(errorMessage)
 		os.Exit(1)
 	}

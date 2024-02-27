@@ -18,12 +18,11 @@ type Category struct {
 
 type Categories []Category
 
-// GetCategoryByID recupera uma categoria pelo seu ID do banco de dados.
 func GetCategoryByID(id int) (Category, error) {
 	var category Category
 
-	err := database.DB.QueryRow("SELECT id, name, description, created_at, updated_at FROM categories WHERE id = ?", id).Scan(
-		&category.ID, &category.Name, &category.Description, &category.CreatedAt, &category.UpdatedAt)
+	err := database.DB.QueryRow("SELECT id, name, description, created_at, updated_at FROM categories WHERE id = ?", id).
+		Scan(&category.ID, &category.Name, &category.Description, &category.CreatedAt, &category.UpdatedAt)
 
 	switch {
 	case err == sql.ErrNoRows:
@@ -35,9 +34,7 @@ func GetCategoryByID(id int) (Category, error) {
 	return category, nil
 }
 
-// UpdateCategoryByID atualiza uma categoria pelo seu ID no banco de dados.
 func UpdateCategoryByID(id int, updatedCategory Category) error {
-	// Atualiza a categoria no banco de dados
 	_, err := database.DB.Exec("UPDATE categories SET name=?, description=?, updated_at=? WHERE id=?",
 		updatedCategory.Name, updatedCategory.Description, time.Now(), id)
 	if err != nil {
@@ -47,9 +44,7 @@ func UpdateCategoryByID(id int, updatedCategory Category) error {
 	return nil
 }
 
-// DeleteCategoryByID exclui uma categoria pelo seu ID do banco de dados.
 func DeleteCategoryByID(id int) error {
-	// Exclui a categoria do banco de dados
 	_, err := database.DB.Exec("DELETE FROM categories WHERE id=?", id)
 	if err != nil {
 		return err
@@ -58,7 +53,6 @@ func DeleteCategoryByID(id int) error {
 	return nil
 }
 
-// GetAllCategories recupera todas as categorias do banco de dados.
 func GetAllCategories() ([]Category, error) {
 	var categories []Category
 
@@ -85,16 +79,13 @@ func GetAllCategories() ([]Category, error) {
 	return categories, nil
 }
 
-// CreateCategory cria uma nova categoria no banco de dados.
 func CreateCategory(category Category) (int, error) {
-	// Insere a categoria no banco de dados
 	result, err := database.DB.Exec("INSERT INTO categories (name, description, created_at, updated_at) VALUES (?, ?, ?, ?)",
 		category.Name, category.Description, time.Now(), time.Now())
 	if err != nil {
 		return 0, err
 	}
 
-	// Recupera o ID da nova categoria inserida
 	id, err := result.LastInsertId()
 	if err != nil {
 		return 0, err
@@ -103,56 +94,81 @@ func CreateCategory(category Category) (int, error) {
 	return int(id), nil
 }
 
-func GetCategoryByRecipeID(recipeID int) (Category, error) {
-	var category Category
+func GetCategoriesByRecipeID(recipeID int) ([]Category, error) {
+	query := `
+		SELECT c.id, c.name, c.description, c.created_at, c.updated_at
+		FROM categories c
+		INNER JOIN recipecategories rc ON c.id = rc.categoryid
+		WHERE rc.recipeid = ?
+	`
 
-	err := database.DB.QueryRow("SELECT c.id, c.name, c.description, c.created_at, c.updated_at FROM categories c JOIN recipes r ON c.id = r.category_id WHERE r.id = ?", recipeID).Scan(
-		&category.ID, &category.Name, &category.Description, &category.CreatedAt, &category.UpdatedAt)
+	rows, err := database.DB.Query(query, recipeID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
 
-	switch {
-	case err == sql.ErrNoRows:
-		return Category{}, fmt.Errorf("category for recipe with ID %d not found", recipeID)
-	case err != nil:
-		return Category{}, err
+	var categories []Category
+
+	for rows.Next() {
+		var category Category
+		err := rows.Scan(
+			&category.ID,
+			&category.Name,
+			&category.Description,
+			&category.CreatedAt,
+			&category.UpdatedAt,
+		)
+		if err != nil {
+			return nil, err
+		}
+
+		categories = append(categories, category)
 	}
 
-	return category, nil
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return categories, nil
 }
 
-// UpdateCategoryByRecipeID atualiza a categoria associada a uma receita pelo seu ID no banco de dados.
-func UpdateCategoryByRecipeID(recipeID int, updatedCategory Category) error {
-	// Inicia uma transação
+func UpdateCategoriesByRecipeID(recipeID int, updatedCategories []Category) error {
 	tx, err := database.DB.Begin()
 	if err != nil {
 		return err
 	}
 	defer func() {
 		if err != nil {
-			// Se houver um erro, faz rollback da transação
 			tx.Rollback()
 			return
 		}
+		tx.Commit()
 	}()
 
-	// Atualiza a categoria associada à receita
-	_, err = tx.Exec("UPDATE recipes SET category_id = ? WHERE id = ?", updatedCategory.ID, recipeID)
+	_, err = tx.Exec("DELETE FROM recipecategories WHERE recipeid = ?", recipeID)
 	if err != nil {
 		return err
 	}
 
-	// Se tudo correr bem, faz commit da transação
-	err = tx.Commit()
+	stmt, err := tx.Prepare("INSERT INTO recipecategories (recipeid, categoryid, updatedAt) VALUES (?, ?, ?)")
 	if err != nil {
 		return err
+	}
+	defer stmt.Close()
+
+	for _, category := range updatedCategories {
+		_, err := stmt.Exec(recipeID, category.ID, time.Now())
+		if err != nil {
+			return err
+		}
 	}
 
 	return nil
 }
 
-// DeleteCategoryByRecipeID exclui a categoria associada a uma receita pelo seu ID no banco de dados.
 func DeleteCategoryByRecipeID(recipeID int) error {
-	// Exclui a categoria associada à receita
-	_, err := database.DB.Exec("UPDATE recipes SET category_id = NULL WHERE id = ?", recipeID)
+	_, err := database.DB.Exec("DELETE FROM recipecategories WHERE recipeid = ?", recipeID)
 	if err != nil {
 		return err
 	}

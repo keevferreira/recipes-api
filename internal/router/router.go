@@ -6,15 +6,17 @@ import (
 	"github.com/keevferreira/recipes-api/internal/router/routes"
 )
 
+// Cria um novo gerenciador de rotas
+func CreateNewRouter() *mux.Router {
+	return mux.NewRouter()
+}
+
 // ConfigureRoutes configura todas as rotas da API.
-func ConfigureRoutes() {
-	Router := mux.NewRouter()
-
+func ConfigureRoutes(routerControler *mux.Router) {
 	//Middleware
-	Router.Use(api.LoggingMiddleware)
-
+	routerControler.Use(api.LoggingMiddleware)
 	//Rotas
-	routes.RecipesConfigureRoutes(Router)
-	routes.IngredientsConfigureRoutes(Router)
-	routes.CategoryConfigureRoutes(Router)
+	routes.RecipesConfigureRoutes(routerControler)
+	routes.IngredientsConfigureRoutes(routerControler)
+	routes.CategoryConfigureRoutes(routerControler)
 }

@@ -2,7 +2,10 @@ package config
 
 import (
 	"fmt"
+	"log"
 	"os"
+
+	"github.com/joho/godotenv"
 )
 
 // Config contém as configurações da aplicação
@@ -36,6 +39,11 @@ func LoadConfig() *Config {
 	}
 
 	// Carrega as variáveis de ambiente usando a função loadEnvVar
+	err := godotenv.Load("../../.env")
+	if err != nil {
+		log.Fatalf("Falha ao carregar as variavéis de ambiente %f", err)
+	}
+
 	loadEnvVar("SERVER_PORT", &config.SERVER_PORT)
 	loadEnvVar("DB_NAME", &config.DB_NAME)
 	loadEnvVar("DB_HOST", &config.DB_HOST)

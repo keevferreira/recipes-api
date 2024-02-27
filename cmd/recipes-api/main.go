@@ -10,9 +10,12 @@ import (
 var GlobalENVConfig *config.Config
 
 func main() {
+	//Carrega as variáveis do arquivo .env para o OS
 	GlobalENVConfig = config.LoadConfig()
 	databaseConnectionString := config.GetConnectionString(GlobalENVConfig)
 	database.Connect(databaseConnectionString)
-	api.InitializeServer(GlobalENVConfig.SERVER_PORT)
-	router.ConfigureRoutes()
+	routerControler := router.CreateNewRouter()
+	router.ConfigureRoutes(routerControler)
+	api.InitializeServer(GlobalENVConfig.SERVER_PORT, routerControler)
+
 }

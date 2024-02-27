@@ -9,20 +9,20 @@ func IngredientsConfigureRoutes(Router *mux.Router) {
 	ingredientHandler := handlers.NewIngredientHandler()
 
 	/**
-	ENDPOINTS /igredient/{id} ROUTES
+	ENDPOINTS /ingredient/{id} ROUTES
 	**/
 
 	// Roteamento para a função GetIngredientByID quando a solicitação é um método GET
-	Router.HandleFunc("/igredient/{id}", ingredientHandler.GetIngredientByID).Methods("GET")
+	Router.HandleFunc("/ingredient/{id}", ingredientHandler.GetIngredientByID).Methods("GET")
 
 	// Roteamento para a função UpdateIngredientByID quando a solicitação é um método PUT
-	Router.HandleFunc("/igredient/{id}", ingredientHandler.UpdateIngredientByID).Methods("PUT")
+	Router.HandleFunc("/ingredient/{id}", ingredientHandler.UpdateIngredientByID).Methods("PUT")
 
 	// Roteamento para a função DeleteIngredientByID quando a solicitação é um método DELETE
-	Router.HandleFunc("/igredient/{id}", ingredientHandler.DeleteIngredientByID).Methods("DELETE")
+	Router.HandleFunc("/ingredient/{id}", ingredientHandler.DeleteIngredientByID).Methods("DELETE")
 
 	/**
-	ENDPOINTS /igredients/ ROUTES
+	ENDPOINTS /ingredients/ ROUTES
 	**/
 
 	// Roteamento para a função GetIngredients quando a solicitação é um método GET
