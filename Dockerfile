@@ -25,9 +25,6 @@ WORKDIR /root/
 # Copy the pre-built binary from the previous stage
 COPY --from=build /app/recipes-api .
 
-# Copy SQL migration scripts for table creation
-COPY internal/database/migrations/*.sql /docker-entrypoint-initdb.d/
-
 # Expose port 8080 to the outside world
 EXPOSE 8080
 

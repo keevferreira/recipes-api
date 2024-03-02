@@ -120,7 +120,7 @@ func DeleteRecipeByID(id int) error {
 func GetAllRecipes() ([]Recipe, error) {
 	var recipes []Recipe
 
-	rows, err := database.DB.Query("SELECT id, title, description, prep_time, difficulty, created_at, updated_at FROM recipes")
+	rows, err := database.DB.Query("SELECT id, title, description, preptime, difficulty, createdat, updatedat FROM recipe")
 	if err != nil {
 		return nil, err
 	}
@@ -167,7 +167,7 @@ func CreateRecipe(recipe Recipe) (int, error) {
 		tx.Commit()
 	}()
 
-	result, err := tx.Exec("INSERT INTO recipes (title, description, prep_time, difficulty, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?)",
+	result, err := tx.Exec("INSERT INTO recipe (title, description, prep_ime, difficulty, createdat, updatedat) VALUES (?, ?, ?, ?, ?, ?)",
 		recipe.Title, recipe.Description, recipe.PrepTime, recipe.Difficulty, time.Now(), time.Now())
 	if err != nil {
 		return 0, err
