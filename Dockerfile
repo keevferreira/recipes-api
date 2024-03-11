@@ -26,7 +26,7 @@ WORKDIR /root/
 COPY --from=build /app/recipes-api .
 
 # Expose port 8080 to the outside world
-EXPOSE 8080
+EXPOSE ${SERVER_PORT}
 
 # Command to run the executable
 CMD ["./recipes-api"]
